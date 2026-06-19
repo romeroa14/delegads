@@ -4,21 +4,25 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LeadResource\Pages;
 use App\Models\Lead;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Support\Colors\Color;
+use UnitEnum;
 
 class LeadResource extends Resource
 {
     protected static ?string $model = Lead::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?string $navigationGroup = 'Sales Pipeline';
+    protected static string|UnitEnum|null $navigationGroup = 'Sales Pipeline';
 
     protected static ?string $modelLabel = 'Lead';
 
@@ -26,11 +30,11 @@ class LeadResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
-                Forms\Components\Section::make('Contact Information')
+                Schemas\Components\Section::make('Contact Information')
                     ->columns(2)
                     ->schema([
                         Forms\Components\TextInput::make('client_name')
@@ -57,7 +61,7 @@ class LeadResource extends Resource
                             ->columnSpan(1),
                     ]),
 
-                Forms\Components\Section::make('Pipeline Stage')
+                Schemas\Components\Section::make('Pipeline Stage')
                     ->columns(3)
                     ->schema([
                         Forms\Components\Select::make('stage')
@@ -112,7 +116,7 @@ class LeadResource extends Resource
                             ->inline(false),
                     ]),
 
-                Forms\Components\Section::make('Facebook / Instagram')
+                Schemas\Components\Section::make('Facebook / Instagram')
                     ->columns(2)
                     ->collapsed()
                     ->schema([
@@ -129,7 +133,7 @@ class LeadResource extends Resource
                             ->maxLength(255),
                     ]),
 
-                Forms\Components\Section::make('Timestamps')
+                Schemas\Components\Section::make('Timestamps')
                     ->columns(2)
                     ->collapsed()
                     ->schema([
@@ -304,13 +308,13 @@ class LeadResource extends Resource
                     ->falseLabel('Bot active'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Actions\ViewAction::make(),
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

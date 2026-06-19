@@ -7,11 +7,11 @@ use Filament\Widgets\ChartWidget;
 
 class ConversionFunnel extends ChartWidget
 {
-    protected static ?string $heading = 'Conversion Funnel';
+    protected ?string $heading = 'Conversion Funnel';
 
     protected static ?int $sort = 5;
 
-    protected static ?string $maxHeight = '320px';
+    protected ?string $maxHeight = '320px';
 
     protected function getData(): array
     {

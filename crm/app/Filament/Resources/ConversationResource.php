@@ -4,21 +4,25 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ConversationResource\Pages;
 use App\Models\Conversation;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use UnitEnum;
 
 class ConversationResource extends Resource
 {
     protected static ?string $model = Conversation::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
-    protected static ?string $navigationGroup = 'Sales Pipeline';
+    protected static string|UnitEnum|null $navigationGroup = 'Sales Pipeline';
 
     protected static ?string $modelLabel = 'Message';
 
@@ -26,11 +30,11 @@ class ConversationResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
-                Forms\Components\Section::make('Message')
+                Schemas\Components\Section::make('Message')
                     ->columns(2)
                     ->schema([
                         Forms\Components\Select::make('tenant_lead_id')
@@ -83,7 +87,7 @@ class ConversationResource extends Resource
                             ->inline(false),
                     ]),
 
-                Forms\Components\Section::make('Content')
+                Schemas\Components\Section::make('Content')
                     ->schema([
                         Forms\Components\Textarea::make('content')
                             ->required()
@@ -186,11 +190,11 @@ class ConversationResource extends Resource
                     ->falseLabel('Human only'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Actions\ViewAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

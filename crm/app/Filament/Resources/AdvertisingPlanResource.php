@@ -4,19 +4,23 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AdvertisingPlanResource\Pages;
 use App\Models\AdvertisingPlan;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class AdvertisingPlanResource extends Resource
 {
     protected static ?string $model = AdvertisingPlan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
 
-    protected static ?string $navigationGroup = 'Marketing';
+    protected static string|UnitEnum|null $navigationGroup = 'Marketing';
 
     protected static ?string $modelLabel = 'Advertising Plan';
 
@@ -24,11 +28,11 @@ class AdvertisingPlanResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
-                Forms\Components\Section::make('Plan')
+                Schemas\Components\Section::make('Plan')
                     ->columns(2)
                     ->schema([
                         Forms\Components\TextInput::make('plan_name')
@@ -45,7 +49,7 @@ class AdvertisingPlanResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
-                Forms\Components\Section::make('Pricing')
+                Schemas\Components\Section::make('Pricing')
                     ->columns(3)
                     ->schema([
                         Forms\Components\TextInput::make('daily_budget')
@@ -84,7 +88,7 @@ class AdvertisingPlanResource extends Resource
                             ->required(),
                     ]),
 
-                Forms\Components\Section::make('Features')
+                Schemas\Components\Section::make('Features')
                     ->schema([
                         Forms\Components\KeyValue::make('features')
                             ->label('Plan Features')
@@ -149,13 +153,13 @@ class AdvertisingPlanResource extends Resource
                     ->falseLabel('Inactive only'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Actions\ViewAction::make(),
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

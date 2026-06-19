@@ -7,11 +7,11 @@ use Filament\Widgets\ChartWidget;
 
 class LeadsByStage extends ChartWidget
 {
-    protected static ?string $heading = 'Leads by Pipeline Stage';
+    protected ?string $heading = 'Leads by Pipeline Stage';
 
     protected static ?int $sort = 4;
 
-    protected static ?string $maxHeight = '300px';
+    protected ?string $maxHeight = '300px';
 
     protected function getData(): array
     {

@@ -4,19 +4,23 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\DesignerResource\Pages;
 use App\Models\Designer;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class DesignerResource extends Resource
 {
     protected static ?string $model = Designer::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-circle';
 
-    protected static ?string $navigationGroup = 'Design Operations';
+    protected static string|UnitEnum|null $navigationGroup = 'Design Operations';
 
     protected static ?string $modelLabel = 'Designer';
 
@@ -24,11 +28,11 @@ class DesignerResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
-                Forms\Components\Section::make('Profile')
+                Schemas\Components\Section::make('Profile')
                     ->columns(2)
                     ->schema([
                         Forms\Components\TextInput::make('name')
@@ -49,7 +53,7 @@ class DesignerResource extends Resource
                             ->maxLength(50),
                     ]),
 
-                Forms\Components\Section::make('Capacity & Pricing')
+                Schemas\Components\Section::make('Capacity & Pricing')
                     ->columns(3)
                     ->schema([
                         Forms\Components\Toggle::make('is_active')
@@ -78,7 +82,7 @@ class DesignerResource extends Resource
                             ->suffix('/ 5'),
                     ]),
 
-                Forms\Components\Section::make('Specialties')
+                Schemas\Components\Section::make('Specialties')
                     ->schema([
                         Forms\Components\TagsInput::make('specialties')
                             ->label('Specialties')
@@ -151,13 +155,13 @@ class DesignerResource extends Resource
                     ->falseLabel('Inactive only'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Actions\ViewAction::make(),
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

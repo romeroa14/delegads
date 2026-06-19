@@ -4,20 +4,24 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CampaignResource\Pages;
 use App\Models\Campaign;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
+use UnitEnum;
 
 class CampaignResource extends Resource
 {
     protected static ?string $model = Campaign::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-megaphone';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-megaphone';
 
-    protected static ?string $navigationGroup = 'Marketing';
+    protected static string|UnitEnum|null $navigationGroup = 'Marketing';
 
     protected static ?string $modelLabel = 'Facebook Campaign';
 
@@ -25,11 +29,11 @@ class CampaignResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
-                Forms\Components\Section::make('Campaign')
+                Schemas\Components\Section::make('Campaign')
                     ->columns(2)
                     ->schema([
                         Forms\Components\TextInput::make('campaign_id')
@@ -63,7 +67,7 @@ class CampaignResource extends Resource
                             ->required(),
                     ]),
 
-                Forms\Components\Section::make('Date Range')
+                Schemas\Components\Section::make('Date Range')
                     ->columns(3)
                     ->schema([
                         Forms\Components\DatePicker::make('date_start')
@@ -78,7 +82,7 @@ class CampaignResource extends Resource
                             ->placeholder('e.g. 2026-06-01_2026-06-30'),
                     ]),
 
-                Forms\Components\Section::make('Timestamps')
+                Schemas\Components\Section::make('Timestamps')
                     ->columns(2)
                     ->collapsed()
                     ->schema([
@@ -161,12 +165,12 @@ class CampaignResource extends Resource
                     ->multiple(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Actions\ViewAction::make(),
+                Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

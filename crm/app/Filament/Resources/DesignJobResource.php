@@ -4,20 +4,24 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\DesignJobResource\Pages;
 use App\Models\DesignJob;
+use BackedEnum;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
+use UnitEnum;
 
 class DesignJobResource extends Resource
 {
     protected static ?string $model = DesignJob::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-paint-brush';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-paint-brush';
 
-    protected static ?string $navigationGroup = 'Design Operations';
+    protected static string|UnitEnum|null $navigationGroup = 'Design Operations';
 
     protected static ?string $modelLabel = 'Design Job';
 
@@ -25,11 +29,11 @@ class DesignJobResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
-                Forms\Components\Section::make('Request')
+                Schemas\Components\Section::make('Request')
                     ->columns(2)
                     ->schema([
                         Forms\Components\Select::make('lead_id')
@@ -74,7 +78,7 @@ class DesignJobResource extends Resource
                             ->columnSpan(1),
                     ]),
 
-                Forms\Components\Section::make('Content')
+                Schemas\Components\Section::make('Content')
                     ->columns(1)
                     ->schema([
                         Forms\Components\Textarea::make('prompt')
@@ -90,7 +94,7 @@ class DesignJobResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
-                Forms\Components\Section::make('Designer Assignment')
+                Schemas\Components\Section::make('Designer Assignment')
                     ->columns(2)
                     ->schema([
                         Forms\Components\Select::make('designer_id')
@@ -107,7 +111,7 @@ class DesignJobResource extends Resource
                             ->columnSpan(1),
                     ]),
 
-                Forms\Components\Section::make('Timestamps')
+                Schemas\Components\Section::make('Timestamps')
                     ->columns(3)
                     ->collapsed()
                     ->schema([
@@ -218,13 +222,13 @@ class DesignJobResource extends Resource
                     ->preload(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Actions\ViewAction::make(),
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
