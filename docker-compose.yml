@@ -1,0 +1,52 @@
+services:
+  hermes:
+    build: ./hermes
+    container_name: hermes
+    restart: unless-stopped
+    ports:
+      - "${HERMES_PORT:-8009}:8000"
+    env_file:
+      - .env
+    environment:
+      - META_PAGE_ACCESS_TOKEN=${META_PAGE_ACCESS_TOKEN}
+      - META_AD_ACCOUNT_ID=${META_AD_ACCOUNT_ID}
+      - META_PAGE_ID=${META_PAGE_ID}
+      - META_INSTAGRAM_ACTOR_ID=${META_INSTAGRAM_ACTOR_ID}
+      - META_APP_ID=${META_APP_ID}
+      - META_APP_SECRET=${META_APP_SECRET}
+      - META_VERIFY_TOKEN=${META_VERIFY_TOKEN}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - OPENROUTER_IMAGE_MODEL=${OPENROUTER_IMAGE_MODEL:-google/imagen-3}
+      - DESIGN_AI_PRICE=${DESIGN_AI_PRICE:-5}
+      - DESIGN_HUMAN_PRICE=${DESIGN_HUMAN_PRICE:-15}
+      - DESIGN_FALLBACK_DAYS=${DESIGN_FALLBACK_DAYS:-7}
+    volumes:
+      - ./hermes/skills:/app/skills
+      - ./hermes/main.py:/app/main.py
+    networks:
+      - delegads-network
+
+  # CRM service — activated in PR-6
+  # crm:
+  #   build: ./crm
+  #   container_name: delegads-crm
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8086:80"
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./crm:/var/www/html
+  #   networks:
+  #     - delegads-network
+
+networks:
+  delegads-network:
+    name: railes_network
+    external: true
