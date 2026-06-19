@@ -32,19 +32,21 @@ services:
     networks:
       - delegads-network
 
-  # CRM service — activated in PR-6
-  # crm:
-  #   build: ./crm
-  #   container_name: delegads-crm
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8086:80"
-  #   env_file:
-  #     - .env
-  #   volumes:
-  #     - ./crm:/var/www/html
-  #   networks:
-  #     - delegads-network
+  # CRM service — Laravel 11 + Filament admin panel
+  crm:
+    build: ./crm
+    container_name: delegads-crm
+    restart: unless-stopped
+    ports:
+      - "8086:80"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=laravel-postgres
+    volumes:
+      - ./crm:/var/www/html
+    networks:
+      - delegads-network
 
 networks:
   delegads-network:
