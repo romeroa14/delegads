@@ -55,6 +55,16 @@ services:
     networks:
       - delegads-network
 
+  # Public website — Nuxt 4 landing page
+  web:
+    build: ./web
+    container_name: delegads-web
+    restart: unless-stopped
+    ports:
+      - "8087:3000"
+    networks:
+      - delegads-network
+
 networks:
   delegads-network:
     name: railes_network
