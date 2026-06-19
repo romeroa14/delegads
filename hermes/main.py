@@ -7,6 +7,7 @@ from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 from skills.meta_ads import MetaAdsSkill
 from skills.ai_engine import AIEngineSkill
+from skills.design_bot import DesignBotSkill
 
 # WhatsApp config
 WHATSAPP_VERIFY_TOKEN = os.getenv('META_VERIFY_TOKEN', 'igbot')
@@ -32,6 +33,7 @@ app = FastAPI(
 # Inicializar Skills
 meta_ads = MetaAdsSkill()
 ai_engine = AIEngineSkill()
+design_bot = DesignBotSkill()
 
 # ================================================================
 # Modelos de Validación Pydantic
@@ -118,6 +120,31 @@ class ValidateReceiptRequest(BaseModel):
 class DescribeImageRequest(BaseModel):
     image_url: str = Field(..., description="URL de la imagen a describir")
     auth_header: Optional[str] = Field(default=None, description="Header de autorización para descargar la imagen (ej: 'Bearer TOKEN')")
+
+
+# ================================================================
+# DesignBot models
+# ================================================================
+class GenerateDesignRequest(BaseModel):
+    prompt: str = Field(..., description="Descripción del diseño deseado (texto en lenguaje natural)")
+    style_preferences: Optional[Dict[str, Any]] = Field(
+        default=None, description="Hints de estilo: {colors, format, mood, etc.}"
+    )
+    lead_id: Optional[int] = Field(default=None, description="ID del lead asociado")
+
+
+class CreateDesignTaskRequest(BaseModel):
+    prompt: str = Field(..., description="Descripción del diseño para el diseñador humano")
+    lead_id: int = Field(..., description="ID del lead asociado")
+    designer_id: Optional[int] = Field(
+        default=None, description="ID del diseñador específico; si es null se auto-asigna por menor workload"
+    )
+
+
+class UpdateDesignJobStatusRequest(BaseModel):
+    status: str = Field(..., description="Nuevo estado: requested|in_progress|review|approved|rejected|fallback_ai")
+    result_url: Optional[str] = Field(default=None, description="URL del resultado entregado (para approved/rejected)")
+    rejected_reason: Optional[str] = Field(default=None, description="Motivo de rechazo (para status=rejected)")
 
 
 # ================================================================
@@ -437,3 +464,67 @@ def describe_image(payload: DescribeImageRequest):
     logger.info(f"Petición de descripción de imagen recibida para: {payload.image_url}")
     description = ai_engine.describe_image_url(payload.image_url, auth_header=payload.auth_header)
     return {"description": description}
+
+
+# ================================================================
+# DesignBot endpoints
+# ================================================================
+@app.post("/generate-design", tags=["DesignBot"])
+def generate_design(payload: GenerateDesignRequest):
+    logger.info(f"Petición de generación de diseño IA recibida (lead_id={payload.lead_id})")
+    result = design_bot.generate_design(
+        prompt=payload.prompt,
+        style_preferences=payload.style_preferences,
+        lead_id=payload.lead_id,
+    )
+    if not result.get("success"):
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail={"message": "No se pudo generar el diseño con IA", "error": result},
+        )
+    return result
+
+
+@app.post("/create-design-task", tags=["DesignBot"])
+def create_design_task(payload: CreateDesignTaskRequest):
+    logger.info(f"Petición de creación de tarea de diseño humano (lead_id={payload.lead_id})")
+    result = design_bot.create_human_task(
+        prompt=payload.prompt,
+        lead_id=payload.lead_id,
+        designer_id=payload.designer_id,
+    )
+    if not result.get("success"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": "No se pudo asignar el diseño a un diseñador", "error": result},
+        )
+    return result
+
+
+@app.get("/design-job/{job_id}", tags=["DesignBot"])
+def get_design_job(job_id: int):
+    logger.info(f"Consulta de estado de design_job ID: {job_id}")
+    job = design_bot.get_job_status(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": f"design_job {job_id} no existe"},
+        )
+    return job
+
+
+@app.post("/design-job/{job_id}/status", tags=["DesignBot"])
+def update_design_job_status(job_id: int, payload: UpdateDesignJobStatusRequest):
+    logger.info(f"Actualización de estado de design_job {job_id} → {payload.status}")
+    result = design_bot.update_job_status(
+        job_id=job_id,
+        status=payload.status,
+        result_url=payload.result_url,
+        rejected_reason=payload.rejected_reason,
+    )
+    if not result.get("success"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": "No se pudo actualizar el estado", "error": result},
+        )
+    return result
