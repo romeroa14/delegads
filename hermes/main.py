@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from skills.meta_ads import MetaAdsSkill
 from skills.ai_engine import AIEngineSkill
 from skills.design_bot import DesignBotSkill
+from skills.content_bot import ContentBotSkill
 
 # WhatsApp config
 WHATSAPP_VERIFY_TOKEN = os.getenv('META_VERIFY_TOKEN', 'igbot')
@@ -34,6 +35,7 @@ app = FastAPI(
 meta_ads = MetaAdsSkill()
 ai_engine = AIEngineSkill()
 design_bot = DesignBotSkill()
+content_bot = ContentBotSkill()
 
 # ================================================================
 # Modelos de Validación Pydantic
@@ -145,6 +147,26 @@ class UpdateDesignJobStatusRequest(BaseModel):
     status: str = Field(..., description="Nuevo estado: requested|in_progress|review|approved|rejected|fallback_ai")
     result_url: Optional[str] = Field(default=None, description="URL del resultado entregado (para approved/rejected)")
     rejected_reason: Optional[str] = Field(default=None, description="Motivo de rechazo (para status=rejected)")
+
+
+# ================================================================
+# ContentBot models
+# ================================================================
+class BriefingRequest(BaseModel):
+    lead_id: int = Field(..., description="ID del lead/cliente")
+    business_name: Optional[str] = Field(default=None, description="Nombre del negocio (opcional, mejora personalización)")
+    business_type: Optional[str] = Field(default=None, description="Tipo de negocio (ej: 'restaurante', 'tienda de ropa')")
+
+
+class BriefingAnswersRequest(BaseModel):
+    lead_id: int = Field(..., description="ID del lead/cliente")
+    answers: Dict[str, str] = Field(..., description="Diccionario {q_id: respuesta} con las respuestas del briefing")
+
+
+class GenerateCalendarRequest(BaseModel):
+    lead_id: int = Field(..., description="ID del lead/cliente")
+    strategy: Dict[str, Any] = Field(..., description="Estrategia devuelta por /content-briefing/answers")
+    month: Optional[int] = Field(default=None, ge=1, le=12, description="Mes target (1-12). Si es None, se usa el mes siguiente")
 
 
 # ================================================================
@@ -528,3 +550,46 @@ def update_design_job_status(job_id: int, payload: UpdateDesignJobStatusRequest)
             detail={"message": "No se pudo actualizar el estado", "error": result},
         )
     return result
+
+
+# ================================================================
+# ContentBot endpoints
+# ================================================================
+@app.post("/content-briefing", tags=["ContentBot"])
+def content_briefing(payload: BriefingRequest):
+    """Genera 5 preguntas personalizadas en español venezolano para conocer el negocio del cliente."""
+    logger.info(f"Generando briefing para lead_id={payload.lead_id}")
+    return content_bot.generate_briefing(
+        lead_id=payload.lead_id,
+        business_name=payload.business_name,
+        business_type=payload.business_type,
+    )
+
+
+@app.post("/content-briefing/answers", tags=["ContentBot"])
+def process_briefing(payload: BriefingAnswersRequest):
+    """Procesa las respuestas del briefing y devuelve la estrategia de contenido (persistida en agent_handoff)."""
+    logger.info(f"Procesando respuestas de briefing para lead_id={payload.lead_id}")
+    return content_bot.process_briefing_answers(
+        lead_id=payload.lead_id,
+        answers=payload.answers,
+    )
+
+
+@app.post("/generate-calendar", tags=["ContentBot"])
+def generate_calendar(payload: GenerateCalendarRequest):
+    """Genera el calendario mensual de contenido y lo guarda en content_calendar.
+    Retorna: 3 feed/sem + 1 reel/sem + 2 stories/día."""
+    logger.info(f"Generando calendario mensual para lead_id={payload.lead_id} (mes={payload.month})")
+    return content_bot.generate_monthly_calendar(
+        lead_id=payload.lead_id,
+        strategy=payload.strategy,
+        month=payload.month,
+    )
+
+
+@app.get("/content-calendar/{lead_id}", tags=["ContentBot"])
+def get_calendar(lead_id: int, month: Optional[int] = None, year: Optional[int] = None):
+    """Devuelve el calendario de contenido de un cliente, opcionalmente filtrado por mes/año."""
+    logger.info(f"GET /content-calendar/{lead_id} (month={month}, year={year})")
+    return content_bot.get_calendar(lead_id=lead_id, month=month, year=year)
