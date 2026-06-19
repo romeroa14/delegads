@@ -39,12 +39,19 @@ services:
     restart: unless-stopped
     ports:
       - "8086:80"
-    env_file:
-      - .env
     environment:
+      - DB_CONNECTION=pgsql
       - DB_HOST=laravel-postgres
+      - DB_PORT=5432
+      - DB_DATABASE=fb_google
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=http://localhost:8086
     volumes:
       - ./crm:/var/www/html
+      - ./crm/storage:/var/www/html/storage
     networks:
       - delegads-network
 
